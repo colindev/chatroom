@@ -42,7 +42,7 @@ function createDom(html) {
         var data = JSON.parse(e.data);
 
         var msg = createDom('<div class="msg"><span class="name">'+data.name+'</span><p>'+data.msg+'</p></div>');
-        msgBox.insertBefore(msg, msgBox.firstChild);
+        msgBox.appendChild(msg);
         while (msgBox.children.length > 10) {
             msgBox.removeChild(msgBox.firstChild);
         }
