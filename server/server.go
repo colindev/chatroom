@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"golang.org/x/net/websocket"
@@ -48,7 +49,7 @@ func main() {
 				} else if err != nil {
 					log.Println("[ws receive]", err)
 				} else {
-					fmt.Printf("[%s] %s: %s\n", roomName, connName, s)
+					fmt.Printf("[%s] %s: %s\n", roomName, connName, strings.TrimSpace(s))
 					r.Broadcast(struct {
 						Name string `json:"name"`
 						Msg  string `json:"msg"`
