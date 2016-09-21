@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"golang.org/x/net/websocket"
 )
@@ -39,10 +40,21 @@ func main() {
 			// 計算頭像
 			iconHash := fmt.Sprintf("%x", md5.Sum([]byte(connName)))
 
-			fmt.Printf("[%s] %s joined\n", roomName, connName)
+			fmt.Printf("%s [%s] %s joined\n", time.Now(), roomName, connName)
 
 			// 取得聊天室
 			r := cm.Checkin(roomName, connName, c)
+
+			// 廣播使用者進房
+			r.Broadcast(struct {
+				Active string `json:"active"`
+				Name   string `json:"name"`
+				Icon   string `json:"icon"`
+			}{
+				Active: "join",
+				Name:   connName,
+				Icon:   iconHash,
+			})
 
 			// 讀取資料
 			for {
@@ -53,7 +65,7 @@ func main() {
 				} else if err != nil {
 					log.Println("[ws receive]", err)
 				} else {
-					fmt.Printf("[%s] %s: %s\n", roomName, connName, strings.TrimSpace(s))
+					fmt.Printf("%s [%s] %s: %s\n", time.Now(), roomName, connName, strings.TrimSpace(s))
 					r.Broadcast(struct {
 						Active string `json:"active"`
 						Name   string `json:"name"`
@@ -67,9 +79,22 @@ func main() {
 					})
 				}
 			}
-			fmt.Printf("[%s] %s leaved\n", roomName, connName)
+			fmt.Printf("%s [%s] %s leaved\n", time.Now(), roomName, connName)
 			cm.GC(c)
+
+			// 廣播使用者退出
+			r.Broadcast(struct {
+				Active string `json:"active"`
+				Name   string `json:"name"`
+				Icon   string `json:"icon"`
+			}{
+				Active: "leave",
+				Name:   connName,
+				Icon:   iconHash,
+			})
+
 		}))
+
 		log.Println("[ws] shutdown:", err)
 	}()
 
