@@ -49,8 +49,9 @@ function createDom(html) {
     };
 
     msgInp.onkeyup = function(e){
-        if (e.keyCode == 13) {
-            ws.send(this.value);
+        var msg = this.value.replace(/^\s*|\s*$/, '')
+        if (e.keyCode == 13 && msg) {
+            ws.send(msg);
             this.value = '';
         }
     };
