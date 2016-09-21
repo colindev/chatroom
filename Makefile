@@ -1,8 +1,14 @@
-all: build
+all: build-server build-client
 
-test:
+test-client:
+	go test -v ./clientcli
+
+build-client: test-client
+	go build -o chatroom-cli ./clientcli
+
+test-server:
 	go test -v ./server
 
-build: test
-	go build -o chatroom ./server
+build-server: test-server
+	go build -o chatroom-server ./server
 
