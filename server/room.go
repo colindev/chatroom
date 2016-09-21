@@ -10,6 +10,7 @@ import (
 // Chatroom handle all rooms
 type Chatroom interface {
 	Checkin(string, string, *websocket.Conn) Room
+	Find(string) Room
 	GC(*websocket.Conn)
 }
 
@@ -41,6 +42,13 @@ func (cm *chatroom) Checkin(chatName, userName string, c *websocket.Conn) Room {
 	return r
 }
 
+func (cm *chatroom) Find(chatName string) Room {
+	cm.Lock()
+	defer cm.Unlock()
+
+	return cm.rooms[chatName]
+}
+
 func (cm *chatroom) GC(c *websocket.Conn) {
 
 	cm.Lock()
@@ -48,6 +56,7 @@ func (cm *chatroom) GC(c *websocket.Conn) {
 	for name, r := range cm.rooms {
 		if r.Has(c) {
 			if 0 >= r.Leave(c) {
+				log.Println("[GC room]", name)
 				delete(cm.rooms, name)
 				return
 			}

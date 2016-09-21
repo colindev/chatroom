@@ -19,8 +19,9 @@ var env = struct {
 }{}
 
 type message struct {
-	Name string `json:"name"`
-	Msg  string `json:"msg"`
+	Active string `json:"active"`
+	Name   string `json:"name,omitempty"`
+	Msg    string `json:"msg,omitempty"`
 }
 
 func main() {
@@ -57,7 +58,9 @@ func main() {
 					if e := json.Unmarshal(msg, &m); err != nil {
 						log.Fatal("[json unmarshal]", e)
 					}
-					fmt.Println(time.Now(), m.Name, ">", strings.TrimSpace(m.Msg))
+					if m.Active == "msg" {
+						fmt.Println(time.Now(), m.Name, ">", strings.TrimSpace(m.Msg))
+					}
 					msg = []byte{}
 				}
 			}

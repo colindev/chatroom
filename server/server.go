@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/md5"
 	"flag"
 	"fmt"
 	"io"
@@ -27,13 +28,16 @@ func main() {
 	flag.StringVar(&env.clientDir, "ui", "client", "Chatroom UI dir")
 	flag.Parse()
 
+	cm := NewChatroom()
+
 	go func() {
 
-		cm := NewChatroom()
-
 		err := http.ListenAndServe(env.wsAddr, websocket.Handler(func(c *websocket.Conn) {
-			roomName := c.Request().URL.Path
+			roomName := strings.TrimLeft(c.Request().URL.Path, "/")
 			connName := c.Request().URL.Query().Get("name")
+
+			// 計算頭像
+			iconHash := fmt.Sprintf("%x", md5.Sum([]byte(connName)))
 
 			fmt.Printf("[%s] %s joined\n", roomName, connName)
 
@@ -51,19 +55,36 @@ func main() {
 				} else {
 					fmt.Printf("[%s] %s: %s\n", roomName, connName, strings.TrimSpace(s))
 					r.Broadcast(struct {
-						Name string `json:"name"`
-						Msg  string `json:"msg"`
-					}{connName, s})
+						Active string `json:"active"`
+						Name   string `json:"name"`
+						Icon   string `json:"icon"`
+						Msg    string `json:"msg"`
+					}{
+						Active: "msg",
+						Name:   connName,
+						Icon:   iconHash,
+						Msg:    s,
+					})
 				}
 			}
 			fmt.Printf("[%s] %s leaved\n", roomName, connName)
-
+			cm.GC(c)
 		}))
 		log.Println("[ws] shutdown:", err)
 	}()
 
 	go func() {
-		err := http.ListenAndServe(env.clientAddr, http.FileServer(http.Dir(env.clientDir)))
+		http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(env.clientDir))))
+		http.HandleFunc("/api/clear", func(w http.ResponseWriter, r *http.Request) {
+			room := r.URL.Query().Get("room")
+
+			if r := cm.Find(room); r != nil {
+				r.Broadcast(struct {
+					Active string `json:"active"`
+				}{"clear"})
+			}
+		})
+		err := http.ListenAndServe(env.clientAddr, nil)
 		log.Println("[ui] shutdown:", err)
 	}()
 
