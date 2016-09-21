@@ -2,6 +2,35 @@
 <div id="msg-box"></div>
 <input id="msg-inp" />
 
+<foot>
+    <a href="http://en.gravatar.com/" target="blank">創建你的頭像</a>
+</foot>
+
+<style>
+#msg-box {
+    width: 450px;
+}
+.msg {
+    width: 100%;
+}
+.msg .name {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    background: none no-repeat 0 0;
+}
+
+.msg p {
+    box-sizing: border-box;
+    display: inline-block;
+    word-wrap: break-word;
+    width: 415px;
+    margin: 0;
+    padding: 0.3em;
+}
+
+</style>
+
 <script>
 
 function createDom(html) {
@@ -23,11 +52,13 @@ function createDom(html) {
         location.hash = hash;
     }
 
-    var name = prompt('請隨意輸入名字'),
+    var name = prompt('請隨意輸入名字', localStorage.getItem('name') || ''),
         cmStatus = document.getElementById('chatroom-status'),
         msgBox = document.getElementById('msg-box'),
         msgInp = document.getElementById('msg-inp'),
         wsUrl = 'ws://'+location.hostname+':9090/'+hash+'?name='+name;
+
+    localStorage.setItem('name', name)
 
     console.log(wsUrl)
 
@@ -41,11 +72,24 @@ function createDom(html) {
     ws.onmessage = function(e){
         var data = JSON.parse(e.data);
 
-        var msg = createDom('<div class="msg"><span class="name">'+data.name+'</span><p>'+data.msg+'</p></div>');
-        msgBox.appendChild(msg);
-        while (msgBox.children.length > 10) {
-            msgBox.removeChild(msgBox.firstChild);
+        switch (data.active) {
+            case "clear":
+                return
+            case "msg":
+                var msg = createDom(
+                        '<div class="msg" alt="'+data.name+'"><span class="name" style="background-image: url(http://s.gravatar.com/avatar/'+
+                        data.icon+
+                        '?s=30;)"></span><p>'+
+                        data.msg+
+                        '</p></div>');
+                msgBox.appendChild(msg);
+                while (msgBox.children.length > 10) {
+                    msgBox.removeChild(msgBox.firstChild);
+                }
+            default:
+                console.debug("unkown:", data)
         }
+
     };
 
     msgInp.onkeyup = function(e){
