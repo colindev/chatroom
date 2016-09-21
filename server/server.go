@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -33,7 +34,7 @@ func main() {
 			roomName := c.Request().URL.Path
 			connName := c.Request().URL.Query().Get("name")
 
-			log.Printf("[%s] %s joined\n", roomName, connName)
+			fmt.Printf("[%s] %s joined\n", roomName, connName)
 
 			// 取得聊天室
 			r := cm.Checkin(roomName, connName, c)
@@ -47,14 +48,14 @@ func main() {
 				} else if err != nil {
 					log.Println("[ws receive]", err)
 				} else {
-					log.Printf("[%s] %s: %s\n", roomName, connName, s)
+					fmt.Printf("[%s] %s: %s\n", roomName, connName, s)
 					r.Broadcast(struct {
 						Name string `json:"name"`
 						Msg  string `json:"msg"`
 					}{connName, s})
 				}
 			}
-			log.Printf("[%s] %s leaved\n", roomName, connName)
+			fmt.Printf("[%s] %s leaved\n", roomName, connName)
 
 		}))
 		log.Println("[ws] shutdown:", err)
