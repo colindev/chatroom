@@ -17,7 +17,7 @@ function createDom(html) {
 
 (function(){
     
-    var hash = location.hash;
+    var hash = location.hash.replace(/^#/, '');
     if (!hash) {
         hash = (new Date).getTime()
         location.hash = hash;
@@ -26,9 +26,12 @@ function createDom(html) {
     var name = prompt('請隨意輸入名字'),
         cmStatus = document.getElementById('chatroom-status'),
         msgBox = document.getElementById('msg-box'),
-        msgInp = document.getElementById('msg-inp');
+        msgInp = document.getElementById('msg-inp'),
+        wsUrl = 'ws://'+location.hostname+':9090/'+hash+'?name='+name;
 
-    var ws = new WebSocket('ws://'+location.hostname+':9090/'+hash+'?name='+name);
+    console.log(wsUrl)
+
+    var ws = new WebSocket(wsUrl);
     ws.onopen = function(e){
         cmStatus.innerHTML = '連線中';
     };
