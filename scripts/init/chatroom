@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# 還沒寫完整,不要用
+
+WORKDIR=/usr/local/share/chatroom
+LOG_INFO=/tmp/chatroom-info.log
+LOG_ERROR=/tmp/chatroom-error.log
+BIN="${WORKDIR}/chatroom-server"
+
+case "$1" in
+    start)
+        ${BIN} >> ${LOG_INFO} 2>> ${LOG_ERROR} &
+        ;;
+    stop)
+        pkill chatroom-server
+        ;;
+esac

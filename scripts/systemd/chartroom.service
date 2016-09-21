@@ -1,0 +1,17 @@
+# 還沒測過,不要用
+
+[Unit]
+Description=Chatroom (WebSocket)
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+User=nobody
+Group=nobody
+WorkingDirectory=/usr/local/share/chatroom
+ExecStart=/usr/local/share/chatroom/chatroom-server >> /tmp/chatroom-info.log 2>>/tmp/chatroom-error.log
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
