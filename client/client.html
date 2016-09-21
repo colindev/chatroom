@@ -20,6 +20,7 @@ function createDom(html) {
     var hash = location.hash;
     if (!hash) {
         hash = (new Date).getTime()
+        location.hash = hash;
     }
 
     var name = prompt('請隨意輸入名字'),
