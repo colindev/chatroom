@@ -86,6 +86,7 @@ function createDom(html) {
                 while (msgBox.children.length > 10) {
                     msgBox.removeChild(msgBox.firstChild);
                 }
+                return
             default:
                 console.debug("unkown:", data)
         }
