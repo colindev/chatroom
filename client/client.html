@@ -1,0 +1,54 @@
+<h1 id="chatroom-status"></h1>
+<div id="msg-box"></div>
+<input id="msg-inp" />
+
+<script>
+
+function createDom(html) {
+    if (!arguments.callee.div) {
+        arguments.callee.div = document.createElement('div');
+    }
+    var div = arguments.callee.div;
+
+    div.innerHTML = html;
+
+    return div.removeChild(div.firstChild);
+}
+
+(function(){
+    
+    var hash = location.hash;
+    if (!hash) {
+        hash = (new Date).getTime()
+    }
+
+    var name = prompt('請隨意輸入名字'),
+        cmStatus = document.getElementById('chatroom-status'),
+        msgBox = document.getElementById('msg-box'),
+        msgInp = document.getElementById('msg-inp');
+
+    var ws = new WebSocket('ws://'+location.hostname+':9090/'+hash+'?name='+name);
+    ws.onopen = function(e){
+        cmStatus.innerHTML = '連線中';
+    };
+    ws.onclose = function(e){
+        cmStatus.innerHTML = '已斷線';
+    };
+    ws.onmessage = function(e){
+        var data = JSON.parse(e.data);
+
+        var msg = createDom('<div class="msg"><span class="name">'+data.name+'</span><p>'+data.msg+'</p></div>');
+        msgBox.insertBefore(msg, msgBox.firstChild);
+        while (msgBox.children.length > 10) {
+            msgBox.removeChild(msgBox.firstChild);
+        }
+    };
+
+    msgInp.onkeyup = function(e){
+        if (e.keyCode == 13) {
+            ws.send(this.value);
+            this.value = '';
+        }
+    };
+})();
+</script>
