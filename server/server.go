@@ -45,6 +45,23 @@ func main() {
 			// 取得聊天室
 			r := cm.Checkin(roomName, connName, c)
 
+			// 告知剛進房使用者當前人數
+			r.Each(func(conn *websocket.Conn, name string) {
+				if c == conn {
+					return
+				}
+
+				r.Send(c, struct {
+					Active string `json:"active"`
+					Name   string `json:"name"`
+					Icon   string `json:"icon"`
+				}{
+					Active: "join",
+					Name:   name,
+					Icon:   fmt.Sprintf("%x", md5.Sum([]byte(name))),
+				})
+			})
+
 			// 廣播使用者進房
 			r.Broadcast(struct {
 				Active string `json:"active"`

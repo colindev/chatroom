@@ -70,6 +70,8 @@ type Room interface {
 	Has(*websocket.Conn) bool
 	Join(string, *websocket.Conn) int
 	Leave(*websocket.Conn) int
+	Each(func(*websocket.Conn, string))
+	Send(*websocket.Conn, interface{}) error
 	Broadcast(interface{})
 }
 
@@ -117,13 +119,23 @@ func (r *room) Leave(c *websocket.Conn) int {
 	return len(r.seats)
 }
 
-func (r *room) Broadcast(msg interface{}) {
+func (r *room) Each(f func(*websocket.Conn, string)) {
 	r.RLock()
 	defer r.RUnlock()
 
 	for c, name := range r.seats {
-		if err := websocket.JSON.Send(c, msg); err != nil {
+		f(c, name)
+	}
+}
+
+func (r *room) Send(c *websocket.Conn, msg interface{}) error {
+	return websocket.JSON.Send(c, msg)
+}
+
+func (r *room) Broadcast(msg interface{}) {
+	r.Each(func(c *websocket.Conn, name string) {
+		if err := r.Send(c, msg); err != nil {
 			log.Printf("[broadcast] fail on %s\n", name)
 		}
-	}
+	})
 }
