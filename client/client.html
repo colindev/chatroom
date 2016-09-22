@@ -1,6 +1,7 @@
 <h1 id="chatroom-status"></h1>
 <div id="msg-box"></div>
 <input id="msg-inp" />
+<div id="users"></div>
 
 <foot>
     <a href="http://en.gravatar.com/" target="blank">創建你的頭像</a>
@@ -29,69 +30,72 @@
     padding: 0.3em;
 }
 
+#users {
+    padding: 2px;
+}
+span.icon {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    margin: 0 2px 2px 0;
+    background: none no-repeat 0 0;
+}
 </style>
+
+<script src="assets/js/createdom.js"></script>
+<script src="assets/js/userlist.js"></script>
+<script src="assets/js/messagebox.js"></script>
+<script src="assets/js/wsconn.js"></script>
 
 <script>
 
-function createDom(html) {
-    if (!arguments.callee.div) {
-        arguments.callee.div = document.createElement('div');
-    }
-    var div = arguments.callee.div;
-
-    div.innerHTML = html;
-
-    return div.removeChild(div.firstChild);
-}
-
 (function(){
     
+    // 取得房間名
     var hash = location.hash.replace(/^#/, '');
     if (!hash) {
         hash = (new Date).getTime()
         location.hash = hash;
     }
 
+    // 取得用戶名
     var name = prompt('請隨意輸入名字', localStorage.getItem('name') || ''),
         cmStatus = document.getElementById('chatroom-status'),
-        msgBox = document.getElementById('msg-box'),
+        msgBox = new MessageBox(document.getElementById('msg-box')),
         msgInp = document.getElementById('msg-inp'),
+        userList = new UserList(document.getElementById('users')),
         wsUrl = 'ws://'+location.hostname+':9090/'+hash+'?name='+name;
 
     localStorage.setItem('name', name)
 
-    console.log(wsUrl)
+    var ws = new WSConn(wsUrl);
+    ws.on(WSConn.OPEN, function(e){
+            cmStatus.innerHTML = '連線中';
+        }).
+        on(WSConn.CLOSE, function(e){
+            cmStatus.innerHTML = '已斷線';
+        }).
+        on(WSConn.MESSAGE, function(e){
+            var data = JSON.parse(e.data);
 
-    var ws = new WebSocket(wsUrl);
-    ws.onopen = function(e){
-        cmStatus.innerHTML = '連線中';
-    };
-    ws.onclose = function(e){
-        cmStatus.innerHTML = '已斷線';
-    };
-    ws.onmessage = function(e){
-        var data = JSON.parse(e.data);
+            switch (data.active) {
+                case "clear":
+                    return
+                case "join":
+                    userList.join(data);
+                    return
+                case "leave":
+                    userList.leave(data);
+                    return
+                case "msg":
+                    msgBox.push(data);
+                    return
+                default:
+                    console.debug("unkown:", data)
+            }
 
-        switch (data.active) {
-            case "clear":
-                return
-            case "msg":
-                var msg = createDom(
-                        '<div class="msg" title="'+data.name+'"><span class="name" style="background-image: url(http://s.gravatar.com/avatar/'+
-                        data.icon+
-                        '?s=30;)"></span><p>'+
-                        data.msg+
-                        '</p></div>');
-                msgBox.appendChild(msg);
-                while (msgBox.children.length > 10) {
-                    msgBox.removeChild(msgBox.firstChild);
-                }
-                return
-            default:
-                console.debug("unkown:", data)
-        }
-
-    };
+        }).connect();
 
     msgInp.onkeyup = function(e){
         var msg = this.value.replace(/^\s*|\s*$/, '')
