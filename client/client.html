@@ -30,26 +30,32 @@
 <script>
 
 (function(){
-    // 取得房間名
-    var hash = location.hash.replace(/^#/, '');
-    if (!hash) {
-        hash = (new Date).getTime()
-        location.hash = hash;
-    }
 
     // 取得用戶名
     var name = prompt('請隨意輸入名字', localStorage.getItem('name') || ''),
         cmStatus = document.getElementById('chatroom-status'),
         msgBox = new MessageBox(document.getElementById('msg-box')),
         msgInp = document.getElementById('msg-inp'),
-        userList = new UserList(document.getElementById('users')),
-        wsUrl = 'ws://'+location.hostname+':9090/'+hash+'?name='+name;
+        userList = new UserList(document.getElementById('users'));
+
+    function getWSURL() {
+        // 取得房間名
+        var hash = location.hash.replace(/^#/, '');
+        if (!hash) {
+            hash = (new Date).getTime()
+            location.hash = hash;
+        }
+        return 'ws://'+location.hostname+':9090/'+hash+'?name='+name;
+    }
 
     localStorage.setItem('name', name)
 
-    var ws = new WSConn(wsUrl);
-    ws.on(WSConn.OPEN, function(e){
-            cmStatus.innerHTML = '連線中';
+    var ws = new WSConn();
+    ws.on(WSConn.CONNECT, function(e){
+            cmStatus.innerHTML = "連線中...";
+        }).
+        on(WSConn.OPEN, function(e){
+            cmStatus.innerHTML = '已連線';
         }).
         on(WSConn.CLOSE, function(e){
             cmStatus.innerHTML = '已斷線';
@@ -75,7 +81,11 @@
                     console.debug("unkown:", data)
             }
 
-        }).connect();
+        }).connect(getWSURL());
+
+    window.onhashchange = function(e){
+        ws.disconnect().connect(getWSURL());
+    };
 
     msgInp.onkeyup = function(e){
         var msg = this.value.replace(/^\s*|\s*$/, '')
@@ -85,4 +95,15 @@
         }
     };
 })();
+</script>
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+     })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-45958867-5', 'auto');
+    ga('send', 'pageview');
+
 </script>

@@ -4,27 +4,37 @@
 
 })(function(){
 
-function WSConn(url) {
+function WSConn() {
 
     var me = this, conn;
 
-    this.connect = function(){
-        if (conn) {
-            return
-        }
+    this.connect = function(url){
+        if (conn) return;
 
+        me.trigger(WSConn.CONNECT, {});
         conn = new WebSocket(url);
         conn.onopen = function(e) {
             me.trigger(WSConn.OPEN, e);
         };
         conn.onclose = function(e){
-            conn = null;
             me.trigger(WSConn.CLOSE, e);
         };
         conn.onmessage = function(e){
             me.trigger(WSConn.MESSAGE, e);
         };
 
+        return me;
+    };
+    this.disconnect = function(){
+
+        if (conn) {
+            me.trigger(WSConn.CLOSE, {});
+            conn.onclose = null;
+            conn.onopen = null;
+            conn.onmessage = null;
+            conn.close();
+            conn = null;
+        }
         return me;
     };
     this.send = function(msg){
@@ -43,7 +53,7 @@ function WSConn(url) {
     }
 }
 
-
+WSConn.CONNECT = 'connect';
 WSConn.OPEN = 'open';
 WSConn.CLOSE = 'close';
 WSConn.MESSAGE = 'message';
