@@ -34,11 +34,15 @@ func main() {
 	go func() {
 
 		err := http.ListenAndServe(env.wsAddr, websocket.Handler(func(c *websocket.Conn) {
+			now := time.Now()
 			roomName := strings.TrimLeft(c.Request().URL.Path, "/")
 			connName := c.Request().URL.Query().Get("name")
 
-			// 計算頭像
-			iconHash := fmt.Sprintf("%x", md5.Sum([]byte(connName)))
+			// user profile
+			userProfile := Profile{
+				Name: connName,
+				Icon: sumName(connName),
+			}
 
 			fmt.Printf("%s [%s] %s joined\n", time.Now(), roomName, connName)
 
@@ -51,26 +55,21 @@ func main() {
 					return
 				}
 
-				r.Send(c, struct {
-					Active string `json:"active"`
-					Name   string `json:"name"`
-					Icon   string `json:"icon"`
-				}{
-					Active: "join",
-					Name:   name,
-					Icon:   fmt.Sprintf("%x", md5.Sum([]byte(name))),
+				r.Send(c, Pack{
+					Active: Join,
+					Profile: Profile{
+						Name: name,
+						Icon: sumName(name),
+					},
+					Time: now.Unix(),
 				})
 			})
 
 			// 廣播使用者進房
-			r.Broadcast(struct {
-				Active string `json:"active"`
-				Name   string `json:"name"`
-				Icon   string `json:"icon"`
-			}{
-				Active: "join",
-				Name:   connName,
-				Icon:   iconHash,
+			r.Broadcast(Pack{
+				Active:  Join,
+				Profile: userProfile,
+				Time:    now.Unix(),
 			})
 
 			// 讀取資料
@@ -83,16 +82,11 @@ func main() {
 					log.Println("[ws receive]", err)
 				} else {
 					fmt.Printf("%s [%s] %s: %s\n", time.Now(), roomName, connName, strings.TrimSpace(s))
-					r.Broadcast(struct {
-						Active string `json:"active"`
-						Name   string `json:"name"`
-						Icon   string `json:"icon"`
-						Msg    string `json:"msg"`
-					}{
-						Active: "msg",
-						Name:   connName,
-						Icon:   iconHash,
-						Msg:    s,
+					r.Broadcast(Pack{
+						Active:  Message,
+						Profile: userProfile,
+						Msg:     s,
+						Time:    time.Now().Unix(),
 					})
 				}
 			}
@@ -100,16 +94,11 @@ func main() {
 			cm.GC(c)
 
 			// 廣播使用者退出
-			r.Broadcast(struct {
-				Active string `json:"active"`
-				Name   string `json:"name"`
-				Icon   string `json:"icon"`
-			}{
-				Active: "leave",
-				Name:   connName,
-				Icon:   iconHash,
+			r.Broadcast(Pack{
+				Active:  Leave,
+				Profile: userProfile,
+				Time:    time.Now().Unix(),
 			})
-
 		}))
 
 		log.Println("[ws] shutdown:", err)
@@ -134,4 +123,8 @@ func main() {
 	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT)
 	sign := <-shutdown
 	log.Printf("[shutdown] %s\n", sign)
+}
+
+func sumName(name string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(name)))
 }
