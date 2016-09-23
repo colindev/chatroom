@@ -108,20 +108,20 @@
                     userList.join(data);
                     msgBox.joined(data);
                     if ( ! me.isSelf(data)) {
-                        notify(location.hash, data);
+                        notifier.notify(location.hash, data);
                     }
                     return
                 case "leave":
                     userList.leave(data);
                     msgBox.leaved(data);
                     if ( ! me.isSelf(data)) {
-                        notify(location.hash, data);
+                        notifier.notify(location.hash, data);
                     }
                     return
                 case "msg":
                     msgBox.push(data);
                     if ( ! me.isSelf(data)) {
-                        notify(location.hash, data);
+                        notifier.notify(location.hash, data);
                     }
                     return
                 default:
@@ -184,6 +184,14 @@
         mask.style.display = 'none';
         msgInp.focus();
     };
+
+    window.onfocus = function(e){
+        notifier.quite(true);
+    };
+    window.onblur = function(e){
+        notifier.quite(false);
+    };
+
 })();
 </script>
 

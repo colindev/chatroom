@@ -1,6 +1,6 @@
 (function(factory){
 
-    self['notify'] = factory(Payload);
+    self['notifier'] = factory(Payload);
 
 })(function(Payload){
 
@@ -16,15 +16,28 @@ document.addEventListener('DOMContentLoaded', function(e){
         
 });
 
-return function notify(title, data){
-    if (!available) return;
-    if (Notification.permission !== "granted") Notification.requestPermission();
+function Notifier() {
 
-    var pld = new Payload(data),
-        n = new Notification(title, {
-            icon: "http://s.gravatar.com/avatar/"+pld.icon()+"?s=80",
-            body: pld.msg().replace(/</g, '&lt;').replace(/>/g, '&gt;')
-        });
+}
+
+Notifier.prototype = {
+    isQuite: false,
+    quite: function(bool){
+        this.isQuite = !!bool;
+    },
+    notify: function(data){
+        if (!available) return;
+        if (Notification.permission !== "granted") Notification.requestPermission();
+        if (this.isQuite) return;
+
+        var pld = new Payload(data),
+            n = new Notification(title, {
+                icon: "http://s.gravatar.com/avatar/"+pld.icon()+"?s=80",
+                body: pld.msg().replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            });
+    }
 };
+
+return new Notifier();
 
 });
