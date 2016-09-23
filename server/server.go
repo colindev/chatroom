@@ -75,6 +75,7 @@ func main() {
 			r.Broadcast(Pack{
 				Active:  Join,
 				Profile: userProfile,
+				Msg:     fmt.Sprintf("%s joined", connName),
 				Time:    now.Unix(),
 			})
 
@@ -103,6 +104,7 @@ func main() {
 			r.Broadcast(Pack{
 				Active:  Leave,
 				Profile: userProfile,
+				Msg:     fmt.Sprintf("%s leaved", connName),
 				Time:    time.Now().Unix(),
 			})
 		}))
