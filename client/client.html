@@ -60,6 +60,9 @@
         }).
         on(WSConn.CLOSE, function(e){
             cmStatus.innerHTML = '已斷線';
+            setTimeout(function(){
+                ws.connect(getWSURL());
+            }, 10*1000);
         }).
         on(WSConn.MESSAGE, function(e){
             var data = JSON.parse(e.data);

@@ -17,6 +17,7 @@ function WSConn() {
             me.trigger(WSConn.OPEN, e);
         };
         conn.onclose = function(e){
+            conn = null;
             me.trigger(WSConn.CLOSE, e);
         };
         conn.onmessage = function(e){
