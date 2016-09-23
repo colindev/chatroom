@@ -227,8 +227,4 @@ footer {
     #mask #username-inp {
         width: calc(85vw - 30px);
     }
-    footer {
-        position: absolute;
-        bottom: 0; left: 0;
-    }
 }
