@@ -215,7 +215,7 @@ footer {
     }
     #msg-box-mask {
         width: 100vw;
-        height: 83vh;
+        height: calc(100vh - 100px);
     }    
     #dashboard {
         width: 95vw;
