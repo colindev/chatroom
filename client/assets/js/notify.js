@@ -25,7 +25,7 @@ Notifier.prototype = {
     quite: function(bool){
         this.isQuite = !!bool;
     },
-    notify: function(data){
+    notify: function(title, data){
         if (!available) return;
         if (Notification.permission !== "granted") Notification.requestPermission();
         if (this.isQuite) return;
