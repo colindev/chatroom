@@ -148,7 +148,7 @@
         }
     };
     msgInp.onkeyup = function(e){
-        if (e.keyCode == 13 && !e.shiftKey) {
+        if (e.keyCode === 13 && !e.shiftKey) {
             send(this);
         }
     };
@@ -168,6 +168,11 @@
         }
     };
 
+    nameInp.onkeyup = function(e){
+        if (e.keyCode === 13) {
+            connectBtn.onclick.call(connectBtn);
+        }
+    };
     connectBtn.onclick = function(e){
         var name = getName();
         if ( ! name) {
