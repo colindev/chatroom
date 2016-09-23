@@ -129,6 +129,10 @@ h1 {
   border-radius: 0 3px 3px 0;
   background-color: hsla(82, 75%, 46%, 1);
   color: hsla(0, 0%, 100%, 0.8);
+  cursor: pointer;
+}
+#send-btn:hover {
+  background-color: hsla(82, 62%, 34%, 1);
 }
 footer {
   box-sizing: border-box;
