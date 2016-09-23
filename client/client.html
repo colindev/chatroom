@@ -1,15 +1,18 @@
 <html>
     <head>
         <meta content="text/html" charset="UTF-8">
+        <meta name="viewport" content="width=20, initial-scale=1, maxinum-scale=3.0, user-scalable=1">
         <link type="text/css" rel="stylesheet" href="assets/css/layout.css">
     </head>
     <body>
 <div class="wrapper">
-  <h1 id="chatroom-status"></h1>
+  <div id="dashboard">
+    <span id="chatroom-status"></span>
+  </div>
   <div id="msg-box-mask">
     <div id="msg-box"></div>
   </div>
-  <input id="msg-inp" />
+  <textarea id="msg-inp" placeholder="想聊點什麼嗎?"></textarea><button id="send-btn">send</button>
   <div id="users"></div>
 
   <foot>
@@ -19,6 +22,13 @@
       <a class="layout-designer" href="https://github.com/estherj-hsu" target="blank">Esther</a>
   </foot>
 </div>
+
+<div id="mask">
+    <div class="inner">
+    <input id="username-inp" placeholder="請隨意輸入名字">
+    <button id="go-btn">Go</button>
+</div>
+
     </body>
 </html>
 <script src="assets/js/createdom.js"></script>
@@ -30,16 +40,22 @@
 
 <script>
 
+
+
 (function(){
 
-    // 取得用戶名
-    var name = prompt('請隨意輸入名字', localStorage.getItem('name') || ''),
-        cmStatus = document.getElementById('chatroom-status'),
+    var cmStatus = document.getElementById('chatroom-status'),
         msgBox = new MessageBox(document.getElementById('msg-box')),
         msgInp = document.getElementById('msg-inp'),
+        sendBtn = document.getElementById('send-btn'),
         userList = new UserList(document.getElementById('users'));
 
-    function getWSURL() {
+    var mask = document.getElementById('mask'),
+        connectBtn = document.getElementById('go-btn'),
+        nameInp = document.getElementById('username-inp');
+
+    // 取得WS連線位置
+    function getWSURL(name) {
         // 取得房間名
         var hash = location.hash.replace(/^#/, '');
         if (!hash) {
@@ -49,19 +65,30 @@
         return 'ws://'+location.hostname+':9090/'+hash+'?name='+name;
     }
 
-    localStorage.setItem('name', name)
+    // 取得用戶名
+    function getName() {
+        var name = nameInp.value;
+        localStorage.setItem('name', name);
+
+        return name;
+    }
+    nameInp.focus();
+    nameInp.value = localStorage.getItem('name');
 
     var ws = new WSConn(), me;
     ws.on(WSConn.CONNECT, function(e){
-            cmStatus.innerHTML = "連線中...";
+            cmStatus.innerHTML = cmStatus.title = "連線中...";
+            cmStatus.setAttribute('class', 'connecting');
         }).
         on(WSConn.OPEN, function(e){
-            cmStatus.innerHTML = '已連線';
+            cmStatus.innerHTML = cmStatus.title = '已連線';
+            cmStatus.setAttribute('class', 'connected');
         }).
         on(WSConn.CLOSE, function(e){
-            cmStatus.innerHTML = '已斷線';
+            cmStatus.innerHTML = cmStatus.title = '已斷線';
+            cmStatus.setAttribute('class', 'disconnected');
             setTimeout(function(){
-                ws.connect(getWSURL());
+                ws.connect(getWSURL(getName()));
             }, 10*1000);
         }).
         on(WSConn.MESSAGE, function(e){
@@ -101,18 +128,51 @@
                     console.debug("unkown:", data)
             }
 
-        }).connect(getWSURL());
+        });
 
     window.onhashchange = function(e){
-        ws.disconnect().connect(getWSURL());
+        ws.disconnect().connect(getWSURL(getName()));
     };
 
-    msgInp.onkeyup = function(e){
-        var msg = this.value.replace(/^\s*|\s*$/, '')
-        if (e.keyCode == 13 && msg) {
+    function send(inp) {
+        var msg = inp.value.replace(/^\s*|\s*$/, '')
+        if (msg) {
             ws.send(msg);
-            this.value = '';
+            inp.value = '';
         }
+    }
+
+    msgInp.onkeyup = function(e){
+        if (e.keyCode == 13 && !e.shiftKey) {
+            send(this);
+        }
+    };
+
+    sendBtn.onclick = function(e){
+        send(msgInp);
+    };
+
+    cmStatus.onclick = function(e){
+        switch (this.className) {
+            case 'connected':
+                ws.disconnect();
+                return
+            case 'disconnected':
+                ws.connect(getWSURL());
+                return
+        }
+    };
+
+    connectBtn.onclick = function(e){
+        var name = getName();
+        if ( ! name) {
+            nameInp.setAttribute('class', 'warn');
+            return
+        }
+        nameInp.removeAttribute('class');
+        ws.connect(getWSURL(name));
+        mask.style.display = 'none';
+        msgInp.focus();
     };
 })();
 </script>
