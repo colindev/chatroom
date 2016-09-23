@@ -128,14 +128,12 @@ h1 {
   background-color: hsla(82, 75%, 46%, 1);
   color: hsla(0, 0%, 100%, 0.8);
 }
-foot {
-  position: absolute;
-  bottom: 0; left: 0;
+footer {
   box-sizing: border-box;
   padding: 10px 10px;
   color: #757575;
   font-size: 12px;
-  width: 100vw;
+  width: 100%;
   text-align: right;
 }
 
@@ -221,5 +219,9 @@ foot {
     }
     #mask #username-inp {
         width: calc(85vw - 30px);
+    }
+    foot {
+        position: absolute;
+        bottom: 0; left: 0;
     }
 }
