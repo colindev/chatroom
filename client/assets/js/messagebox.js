@@ -47,11 +47,25 @@ MessageBox.prototype = {
 
     // 產生訊息模組字串
     buildMsg: function(icon, name, msg, time) {
+
         return this.format.
             replace(/\{icon\}/g, icon).
             replace(/\{name\}/g, name).
             replace(/\{time\}/g, time).
-            replace(/\{msg\}/g, msg);
+            replace(/\{msg\}/g, this.resolveLink(this.resolveMsg(msg)));
+    },
+
+    // 過濾處理 XSS 之類的安全性問題
+    resolveMsg: function(msg){
+        return (''+msg).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    },
+    resolveLink: function(msg) {
+        return msg.replace(/(https?:\/\/[^\s]+)/g, function(x, $1){
+                    var text = $1.replace(/^(.{6,25})(.*?)(.{0,5})$/, function(x, $1, $2, $3){
+                        return $1+($2?'...':'')+$3;
+                    });
+                    return '<a target="blank" href="'+$1+'">'+text+'</a>';
+                });
     }
 };
 
