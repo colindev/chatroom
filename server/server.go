@@ -62,7 +62,7 @@ func main() {
 				}
 
 				r.Send(c, Pack{
-					Active: Join,
+					Active: CurrentMembers,
 					Profile: Profile{
 						Name: name,
 						Icon: sumName(name),

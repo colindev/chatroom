@@ -10,6 +10,8 @@ const (
 	SystemMessage Active = "system-msg"
 	// Message mean this pack is message
 	Message Active = "msg"
+	// CurrentMembers mean origin room members
+	CurrentMembers Active = "current-members"
 	// Join mean user come in room
 	Join Active = "join"
 	// Leave mean user leaved

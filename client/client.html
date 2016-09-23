@@ -74,9 +74,15 @@
                 case "init":
                     me = new Payload(data);
                     return
+                case "current-members":
+                    userList.join(data);
+                    return
                 case "join":
                     userList.join(data);
                     msgBox.joined(data);
+                    if ( ! me.isSelf(data)) {
+                        notify(location.hash, data);
+                    }
                     return
                 case "leave":
                     userList.leave(data);
@@ -85,7 +91,7 @@
                 case "msg":
                     msgBox.push(data);
                     if ( ! me.isSelf(data)) {
-                        notify("chatroom", data);
+                        notify(location.hash, data);
                     }
                     return
                 default:

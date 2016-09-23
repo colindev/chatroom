@@ -16,8 +16,8 @@
             d.setTime(this.data.time * 1000)
             return d.toLocaleString();
         },
-        msg: function(){
-            return this.data && this.data.msg;
+        msg: function(def){
+            return this.data && this.data.msg || def || '';
         },
         isSelf: function(data){
             return this.icon() === data.profile.icon;
