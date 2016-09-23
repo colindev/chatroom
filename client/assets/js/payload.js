@@ -14,7 +14,7 @@
         time: function(){
             var d = new Date;
             d.setTime(this.data.time * 1000)
-            return d.toLocaleString();
+            return d.toLocaleTimeString();
         },
         msg: function(def){
             return this.data && this.data.msg || def || '';
