@@ -21,7 +21,7 @@ function Notifier() {
 }
 
 Notifier.prototype = {
-    isQuite: false,
+    isQuite: true,
     quite: function(bool){
         this.isQuite = !!bool;
     },
