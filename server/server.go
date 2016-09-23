@@ -49,6 +49,12 @@ func main() {
 			// 取得聊天室
 			r := cm.Checkin(roomName, connName, c)
 
+			r.Send(c, Pack{
+				Active:  Init,
+				Profile: userProfile,
+				Time:    now.Unix(),
+			})
+
 			// 告知剛進房使用者當前人數
 			r.Each(func(conn *websocket.Conn, name string) {
 				if c == conn {

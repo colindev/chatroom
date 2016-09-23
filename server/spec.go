@@ -4,8 +4,10 @@ package main
 type Active string
 
 const (
+	// Init send on connect
+	Init Active = "init"
 	// SystemMessage mean this pack come from system
-	SystemMessage = "system-msg"
+	SystemMessage Active = "system-msg"
 	// Message mean this pack is message
 	Message Active = "msg"
 	// Join mean user come in room

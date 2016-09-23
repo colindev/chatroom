@@ -18,6 +18,9 @@
         },
         msg: function(){
             return this.data && this.data.msg;
+        },
+        isSelf: function(data){
+            return this.icon() === data.profile.icon;
         }
     };
 

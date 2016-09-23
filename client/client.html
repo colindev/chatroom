@@ -23,6 +23,7 @@
 </html>
 <script src="assets/js/createdom.js"></script>
 <script src="assets/js/payload.js"></script>
+<script src="assets/js/notify.js"></script>
 <script src="assets/js/userlist.js"></script>
 <script src="assets/js/messagebox.js"></script>
 <script src="assets/js/wsconn.js"></script>
@@ -50,7 +51,7 @@
 
     localStorage.setItem('name', name)
 
-    var ws = new WSConn();
+    var ws = new WSConn(), me;
     ws.on(WSConn.CONNECT, function(e){
             cmStatus.innerHTML = "連線中...";
         }).
@@ -65,6 +66,10 @@
 
             switch (data.active) {
                 case "clear":
+                    // TODO
+                    return
+                case "init":
+                    me = new Payload(data);
                     return
                 case "join":
                     userList.join(data);
@@ -76,6 +81,9 @@
                     return
                 case "msg":
                     msgBox.push(data);
+                    if ( ! me.isSelf(data)) {
+                        notify("chatroom", data);
+                    }
                     return
                 default:
                     console.debug("unkown:", data)
