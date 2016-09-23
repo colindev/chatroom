@@ -205,7 +205,7 @@ footer {
 }
 @media screen and (min-width:500px) {
     .wrapper {
-      width: 350px;
+      width: 450px;
       height: 550px;
       margin: calc((100vh - 500px) / 2) auto;
     }
