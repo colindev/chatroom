@@ -158,7 +158,7 @@
                 ws.disconnect();
                 return
             case 'disconnected':
-                ws.connect(getWSURL());
+                ws.connect(getWSURL(getName()));
                 return
         }
     };
