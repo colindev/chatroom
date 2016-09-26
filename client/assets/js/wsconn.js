@@ -70,10 +70,10 @@ WSConn.prototype = {
     },
     off: function(type, handler) {
         if (this._handlers[type]) {
-            var i = this._handlers[type];
+            var i = this._handlers[type].length;
             while (i--) {
                 if (this._handlers[type][i] == handler) {
-                    this._handlers[type].split(i, 1);
+                    this._handlers[type].splice(i, 1);
                 }
             } 
         }
