@@ -102,8 +102,7 @@ h1 {
 .msg p {
     box-sizing: border-box;
     display: inline-block;
-    word-wrap: break-word;
-    white-space: pre;
+    white-space: pre-wrap;
     width: calc(100% - 50px);
     padding-right: 10px;
     margin: 0;
