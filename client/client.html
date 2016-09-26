@@ -15,10 +15,11 @@
   </div>
   <div id="users"></div>
   <footer>
-      <a class="gravatar" href="http://en.gravatar.com/" target="blank">創建你的頭像</a>
-      <a class="github" href="https://github.com/colindev/chatroom.git" target="blank">github</a>
-      <a class="system-designer" href="https://github.com/colindev" target="blank">Colin</a>
-      <a class="layout-designer" href="https://github.com/estherj-hsu" target="blank">Esther</a>
+    <a id="new-room-btn" href="./client.html">隨機新房間</a>
+    <a class="gravatar" href="http://en.gravatar.com/" target="_blank">創建你的頭像</a>
+    <a class="github" href="https://github.com/colindev/chatroom.git" target="_blank">github</a>
+    <a class="system-designer" href="https://github.com/colindev" target="_blank">Colin</a>
+    <a class="layout-designer" href="https://github.com/estherj-hsu" target="_blank">Esther</a>
   </footer>
 </div>
 
@@ -72,7 +73,18 @@
     nameInp.focus();
     nameInp.value = localStorage.getItem('name');
 
-    var ws = new WSConn(), me;
+    var ws = new WSConn(), 
+        me, 
+        reconn = function(){
+            setTimeout(function(){
+                cmStatus.innerHTML = cmStatus.title = "Reconnect after 10 second ...";
+                cmStatus.setAttribute('class', 'connecting');
+                setTimeout(function(){
+                    ws.connect(getWSURL(getName()));
+                }, 10*1000);
+            }, 500);
+        };
+    
     ws.on(WSConn.CONNECT, function(e){
             cmStatus.innerHTML = cmStatus.title = "Connecting...";
             cmStatus.setAttribute('class', 'connecting');
@@ -84,14 +96,8 @@
         on(WSConn.CLOSE, function(e){
             cmStatus.innerHTML = cmStatus.title = 'Desconneted';
             cmStatus.setAttribute('class', 'disconnected');
-            setTimeout(function(){
-                cmStatus.innerHTML = cmStatus.title = "Reconnect after 10 second ...";
-                cmStatus.setAttribute('class', 'connecting');
-                setTimeout(function(){
-                    ws.connect(getWSURL(getName()));
-                }, 10*1000);
-            }, 500);
         }).
+        on(WSConn.CLOSE, reconn).
         on(WSConn.MESSAGE, function(e){
             var data = JSON.parse(e.data);
 
@@ -130,10 +136,6 @@
             }
 
         });
-
-    window.onhashchange = function(e){
-        ws.disconnect().connect(getWSURL(getName()));
-    };
 
     function send(inp) {
         var msg = inp.value.replace(/^\s*|\s*$/, '')
@@ -191,6 +193,9 @@
     };
     window.onblur = function(e){
         notifier.quite(false);
+    };
+    window.onhashchange = function(e){
+        ws.off(WSConn.CLOSE, reconn).disconnect().connect(getWSURL(getName())).on(WSConn.CLOSE, reconn);
     };
 
 })();
